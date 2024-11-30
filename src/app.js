@@ -1,6 +1,7 @@
 // src/app.js
 import Fastify from 'fastify';
 import userRoutes from './routes/userRoutes.js';
+import productRoutes from './routes/productRoutes.js';
 import { sequelize } from './sequelize.js';
 
 const fastify = Fastify({
@@ -9,6 +10,7 @@ const fastify = Fastify({
 
 // Register the routes
 fastify.register(userRoutes);
+fastify.register(productRoutes);
 
 fastify.get('/', async (request, reply) => {
   return { hello: 'world' }
