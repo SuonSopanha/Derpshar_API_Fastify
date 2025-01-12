@@ -6,8 +6,18 @@ export const createProduct = async (productData) => {
   try {
     const product = await Product.create(productData);
     return product;
-  } catch (err) {
-    throw new Error('Error creating product: ' + err.message);
+  } catch (error) {
+    throw new Error('Error creating product: ' + error.message);
+  }
+};
+
+// Bulk create products
+export const bulkCreateProducts = async (productsData) => {
+  try {
+    const products = await Product.bulkCreate(productsData);
+    return products;
+  } catch (error) {
+    throw new Error('Error bulk creating products: ' + error.message);
   }
 };
 
@@ -16,12 +26,12 @@ export const getAllProducts = async () => {
   try {
     const products = await Product.findAll();
     return products;
-  } catch (err) {
-    throw new Error('Error fetching products: ' + err.message);
+  } catch (error) {
+    throw new Error('Error fetching products: ' + error.message);
   }
 };
 
-// Get a product by ID
+// Get product by ID
 export const getProductById = async (id) => {
   try {
     const product = await Product.findByPk(id);
@@ -29,25 +39,26 @@ export const getProductById = async (id) => {
       throw new Error('Product not found');
     }
     return product;
-  } catch (err) {
-    throw new Error('Error fetching product: ' + err.message);
+  } catch (error) {
+    throw new Error('Error fetching product: ' + error.message);
   }
 };
 
-// Update a product by ID
-export const updateProduct = async (id, updatedData) => {
+// Update product by ID
+export const updateProduct = async (id, productData) => {
   try {
     const product = await Product.findByPk(id);
     if (!product) {
       throw new Error('Product not found');
     }
-    return await product.update(updatedData);
-  } catch (err) {
-    throw new Error('Error updating product: ' + err.message);
+    await product.update(productData);
+    return product;
+  } catch (error) {
+    throw new Error('Error updating product: ' + error.message);
   }
 };
 
-// Delete a product by ID
+// Delete product by ID
 export const deleteProduct = async (id) => {
   try {
     const product = await Product.findByPk(id);
@@ -55,8 +66,8 @@ export const deleteProduct = async (id) => {
       throw new Error('Product not found');
     }
     await product.destroy();
-    return product;
-  } catch (err) {
-    throw new Error('Error deleting product: ' + err.message);
+    return { message: 'Product deleted successfully' };
+  } catch (error) {
+    throw new Error('Error deleting product: ' + error.message);
   }
 };

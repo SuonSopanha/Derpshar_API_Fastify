@@ -6,8 +6,18 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import { sequelize } from './sequelize.js';
 
+import Stripe from "stripe";
+import dotenv from "dotenv";
+
+dotenv.config();
+
 const fastify = Fastify({
   logger: true,
+});
+
+// Initialize Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2023-10-16'
 });
 
 // Register the routes
@@ -19,6 +29,47 @@ fastify.register(orderRoutes);
 fastify.get('/', async (request, reply) => {
   return { hello: 'world' }
 });
+
+fastify.register(import("@fastify/cors"), { origin: "*" });
+
+// Register routes
+fastify.post('/create-payment-intent', async (request, reply) => {
+  try {
+    const { amount, currency = 'usd' } = request.body;
+
+    // Create a customer
+    const customer = await stripe.customers.create();
+
+    // Create an ephemeral key for the customer
+    const ephemeralKey = await stripe.ephemeralKeys.create(
+      { customer: customer.id },
+      { apiVersion: '2023-10-16' }
+    );
+
+    // Create a payment intent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount, // amount in cents
+      currency: currency,
+      customer: customer.id,
+      payment_method_types: ['card'],
+      metadata: {
+        order_id: `order-${Date.now()}`
+      }
+    });
+
+    // Return the necessary client secret and keys
+    return {
+      paymentIntent: paymentIntent.client_secret,
+      ephemeralKey: ephemeralKey.secret,
+      customer: customer.id,
+      publishableKey: process.env.STRIPE_PUBLISHABLE_KEY
+    };
+  } catch (error) {
+    fastify.log.error(error);
+    reply.status(400).send({ error: error.message });
+  }
+});
+
 
 // Start the server
 async function start() {

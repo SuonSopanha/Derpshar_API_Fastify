@@ -1,23 +1,72 @@
 // src/controllers/userController.js
-import * as userService from '../services/userService.js';
+import {
+  createUser,
+  getAllUsers,
+  getUserById,
+  updateUserById,
+  deleteUserById,
+} from '../services/userService.js';
 
-const createUserController = async (request, reply) => {
-  const { name, email } = request.body;
+// Create a new user
+export const createUserController = async (req, reply) => {
   try {
-    const user = await userService.createUser({ name, email });
-    return reply.status(201).send(user);
+    const { name, email, password, phone_number, address, role } = req.body;
+    const user = await createUser({ name, email, password, phone_number, address, role });
+    reply.code(201).send(user);
   } catch (error) {
-    reply.status(400).send({ error: error.message });
+    reply.code(500).send({ error: 'Failed to create user', details: error.message });
   }
 };
 
-const getUsersController = async (request, reply) => {
+// Get all users
+export const getUsersController = async (req, reply) => {
   try {
-    const users = await userService.getAllUsers();
-    return reply.send(users);
+    const users = await getAllUsers();
+    reply.code(200).send(users);
   } catch (error) {
-    reply.status(500).send({ error: error.message });
+    reply.code(500).send({ error: 'Failed to fetch users', details: error.message });
   }
 };
 
-export { createUserController, getUsersController };
+// Get a single user by ID
+export const getUserByIdController = async (req, reply) => {
+  try {
+    const { id } = req.params;
+    const user = await getUserById(id);
+    if (!user) {
+      return reply.code(404).send({ error: 'User not found' });
+    }
+    reply.code(200).send(user);
+  } catch (error) {
+    reply.code(500).send({ error: 'Failed to fetch user', details: error.message });
+  }
+};
+
+// Update a user by ID
+export const updateUserController = async (req, reply) => {
+  try {
+    const { id } = req.params;
+    const { name, email, password, phone_number, address, role } = req.body;
+    const updatedUser = await updateUserById(id, { name, email, password, phone_number, address, role });
+    if (!updatedUser) {
+      return reply.code(404).send({ error: 'User not found' });
+    }
+    reply.code(200).send(updatedUser);
+  } catch (error) {
+    reply.code(500).send({ error: 'Failed to update user', details: error.message });
+  }
+};
+
+// Delete a user by ID
+export const deleteUserController = async (req, reply) => {
+  try {
+    const { id } = req.params;
+    const isDeleted = await deleteUserById(id);
+    if (!isDeleted) {
+      return reply.code(404).send({ error: 'User not found' });
+    }
+    reply.code(204).send();
+  } catch (error) {
+    reply.code(500).send({ error: 'Failed to delete user', details: error.message });
+  }
+};

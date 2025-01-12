@@ -1,61 +1,68 @@
 // src/controllers/productController.js
-import { createProduct, getAllProducts, getProductById, updateProduct, deleteProduct } from '../services/productService.js';
+import { createProduct, bulkCreateProducts, getAllProducts, getProductById, updateProduct, deleteProduct } from '../services/productService.js';
 
-// Controller to create a product
-export const createProductController = async (request, reply) => {
-  const { name, description, price, stock } = request.body;
-  
+// Create a new product
+export const createProductController = async (req, reply) => {
   try {
-    const product = await createProduct({ name, description, price, stock });
-    reply.status(201).send(product);
-  } catch (err) {
-    reply.status(500).send({ error: err.message });
+    const productData = req.body;
+    const newProduct = await createProduct(productData);
+    reply.status(201).send(newProduct);
+  } catch (error) {
+    reply.status(500).send({ message: error.message });
   }
 };
 
-// Controller to get all products
-export const getAllProductsController = async (request, reply) => {
+// Bulk create products
+export const bulkCreateProductsController = async (req, reply) => {
+  try {
+    const productsData = req.body;
+    const products = await bulkCreateProducts(productsData);
+    reply.status(201).send(products);
+  } catch (error) {
+    reply.status(500).send({ message: error.message });
+  }
+};
+
+// Get all products
+export const getAllProductsController = async (req, reply) => {
   try {
     const products = await getAllProducts();
     reply.status(200).send(products);
-  } catch (err) {
-    reply.status(500).send({ error: err.message });
+  } catch (error) {
+    reply.status(500).send({ message: error.message });
   }
 };
 
-// Controller to get a product by ID
-export const getProductByIdController = async (request, reply) => {
-  const { id } = request.params;
-  
+// Get product by ID
+export const getProductByIdController = async (req, reply) => {
+  const { id } = req.params;
   try {
     const product = await getProductById(id);
     reply.status(200).send(product);
-  } catch (err) {
-    reply.status(500).send({ error: err.message });
+  } catch (error) {
+    reply.status(500).send({ message: error.message });
   }
 };
 
-// Controller to update a product
-export const updateProductController = async (request, reply) => {
-  const { id } = request.params;
-  const updatedData = request.body;
-  
+// Update product by ID
+export const updateProductController = async (req, reply) => {
+  const { id } = req.params;
+  const productData = req.body;
   try {
-    const product = await updateProduct(id, updatedData);
-    reply.status(200).send(product);
-  } catch (err) {
-    reply.status(500).send({ error: err.message });
+    const updatedProduct = await updateProduct(id, productData);
+    reply.status(200).send(updatedProduct);
+  } catch (error) {
+    reply.status(500).send({ message: error.message });
   }
 };
 
-// Controller to delete a product
-export const deleteProductController = async (request, reply) => {
-  const { id } = request.params;
-  
+// Delete product by ID
+export const deleteProductController = async (req, reply) => {
+  const { id } = req.params;
   try {
-    const product = await deleteProduct(id);
-    reply.status(200).send({ message: 'Product deleted', product });
-  } catch (err) {
-    reply.status(500).send({ error: err.message });
+    const response = await deleteProduct(id);
+    reply.status(200).send(response);
+  } catch (error) {
+    reply.status(500).send({ message: error.message });
   }
 };
